@@ -5,7 +5,7 @@ from django.http import JsonResponse  # simple function to test http responses
 
 def getRoutes(request):  # needs 'request' object passed to it
 
-    # example{ routes / endpoints
+    # example routes / endpoints for the API
     routes = [
         {
             'Endpoint': '/workouts/',
@@ -22,13 +22,13 @@ def getRoutes(request):  # needs 'request' object passed to it
         {
             'Endpoint': '/workouts/create',
             'method': 'POST',
-            'body': {'name', 'description', 'exercises', 'duration', 'date'},
+            'body': {'name', 'notes', 'exercises', 'duration', 'date'},
             'description': 'Creates a new workout'
         },
         {
             'Endpoint': '/workouts/id/update',
             'method': 'PUT',
-            'body': {'name', 'description', 'exercises', 'duration', 'date'},
+            'body': {'name', 'notes', 'exercises', 'duration', 'date'},
             'description': 'Updates a workout'
         },
         {
