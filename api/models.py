@@ -1,22 +1,73 @@
 from django.db import models
 import random
 
-# Create your models here.
+
+class Exercise(models.Model):
+    """
+    Inherits Django's models.Model and represents the Exercise table in the database
+    Contains the fields:
+    name - required, unique
+    exercise_type - required, choices deinied in the EXERCISE_TYPES list
+    sets - optional for applicable exercises
+    reps - optional for applicable exercises
+    weight - optional for applicable exercises, default in kgs
+    duration - optional for applicable exercises
+    """
+    EXERCISE_TYPES = [
+        ("Pull", "Pull"),
+        ("Push", "Push"),
+        ("Legs", "Legs"),
+        ("Core", "Core"),
+        ("Cardio", "Cardio"),
+        ("Other", "Other"),
+    ]
+
+    name = models.CharField(max_length=100, null=False, unique=True)
+    exercise_type = models.CharField(max_length=100, null=False, choices=EXERCISE_TYPES)
+    sets = models.IntegerField(blank=True, null=True)
+    reps = models.IntegerField(blank=True, null=True)  # will this need to be vairable? (need a range?)
+    weight = models.IntegerField(blank=True, null=True)
+    duration = models.DurationField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    
+    # function for creating the absolute url for the workout - copes with the url changing (e.g. if the name changes due to date changing)
+    def get_absolute_url(self):
+        return reverse('view_exercise', kwargs={"name": str(self.name)})  # insert the url path name as definied in the urls.py file and any kwargs that are needed e.g. "name": str(self.name)
+
 
 class Workout(models.Model):
-    name = models.CharField(max_length=200, null=False, unique=True)  # create an after save function which makes this from the date as words + a random 4 digit number
+    """
+    Inherits Django's models.Model and represents the Exercise table in the database
+    Contains the fields:
+    workout_id - required, unique - created on saving
+    display_name - required, not unique
+    notes - optional, textfield
+    exercises - optional, can be deleted w/o deleting the workout - foreign key to Exercise table
+    duration - optional, duration field
+    date - required, not automatically set, can be changed - used on save to generate the workout_id
+    updated - automatically set upon updating
+    """
+    workout_id = models.CharField(max_length=200, null=False, unique=True)  # more like a slug/unique id - create an after save function to make from the date as words + a random 4 digit number
+    display_name = models.CharField(max_length=200, null=False, unique=False)  # this is the name that will be displayed to the user
     notes = models.TextField(blank=True, null=True)
-    exercieses = models.ForeignKey(
+    exercises = models.ForeignKey(
         Exercise,
         null=True,
         on_delete=models.SET_NULL
     )
     duration = models.DurationField(blank=True, null=True)
-    date = models.DateTimeField(auto_now_add=False)
+    date = models.DateTimeField(auto_now_add=False, blank=False, null=False)  # dnot required to have the date and it should be able to be changed
+    updated = models.DateTimeField(auto_now=True)  # saves the time of every update (nice to have?)
 
     def __str__(self):
-        return self.name
+        return self.display_name
     
+    # function for creating the absolute url for the workout - copes with the url changing (e.g. if the name changes due to date changing)
+    def get_absolute_url(self):
+        return reverse('view_workout', kwargs={"workout_id": str(self.workout_id)})  # insert the url path name as definied in the urls.py file and any kwargs that are needed e.g. "workout_id": str(self.workout_id)
 
     # ---------- functions for creating the name (unique like a url slug) on Workout creation
 
@@ -24,6 +75,7 @@ class Workout(models.Model):
     #     """
     #     Method for generating a random name for each Workout instance upon saving
     #     it.
+    ########### OR: take first 4 chars from the display name which arent spaces, add the date as a string of numbers and a random 4 digit number at the end
     #     This method:
     #     -takes the date and converts into a string / formats it to be valid in a url
     #     -generates a random 4 digit number to append to the end of the date string
@@ -70,23 +122,3 @@ class Workout(models.Model):
 
 
 
-class Exercise(models.Model):
-    """
-    Inherits Django's models.Model and represents the Exercise table in the database
-    Contains the fields:
-    name - required, unique
-    type - required, choices
-    sets - optional for applicable exercises
-    reps - optional for applicable exercises
-    weight - optional for applicable exercises, default in kgs
-    duration - optional for applicable exercises
-    """
-    name = models.CharField(max_length=100, null=False, unique=True)
-    type = models.CharField(max_length=100, null=False, choices=('Pull', 'Push', 'Legs', 'Core', 'Cardio', 'Other'))
-    sets = models.IntegerField(blank=True, null=True)
-    reps = models.IntegerField(blank=True, null=True)  # will this need to be vairable? (need a range?)
-    weight = models.IntegerField(blank=True, null=True)
-    duration = models.DurationField(blank=True, null=True)
-
-    def __str__(self):
-        return self.name
